@@ -1,0 +1,146 @@
+<?xml version="1.0"?>
+<project name="jsnobol3" default="all" basedir=".">
+
+<property name="RELEASE" value="1.0"/>
+<property name="RELEASEDATE" value="2005-10-01"/>
+
+<property name="VMSRC" value="
+jsnobol3/Argtype.java
+jsnobol3/AST.java
+jsnobol3/AstType.java
+jsnobol3/Call.java
+jsnobol3/S3Compiler.java
+jsnobol3/Constants.java
+jsnobol3/Debug.java
+jsnobol3/Define.java
+jsnobol3/Error.java
+jsnobol3/EvalStack.java
+jsnobol3/Frame.java
+jsnobol3/Function.java
+jsnobol3/FunctionCompiler.java
+jsnobol3/Label.java
+jsnobol3/Lexer.java
+jsnobol3/Modes.java
+jsnobol3/Operator.java
+jsnobol3/Parser.java
+jsnobol3/Pass1.java
+jsnobol3/Pass2.java
+jsnobol3/Pass3.java
+jsnobol3/PatternOp.java
+jsnobol3/Primitive.java
+jsnobol3/Program.java
+jsnobol3/S3Reader.java
+jsnobol3/Scope.java
+jsnobol3/Token.java
+jsnobol3/TokenType.java
+jsnobol3/Var.java
+jsnobol3/VM.java
+"/>
+
+<property name="INTERPSRC" value="
+jsnobol3/AbstractDebug.java
+jsnobol3/AbstractDebugPoint.java
+jsnobol3/CharStream.java
+jsnobol3/CharStreamSequence.java
+jsnobol3/Factory.java
+jsnobol3/Main.java
+jsnobol3/Parameters.java
+jsnobol3/ParseArgs.java
+jsnobol3/Pos.java
+jsnobol3/QuotedString.java
+jsnobol3/Ref.java
+jsnobol3/Snobol3.java
+jsnobol3/StringBufferReader.java
+jsnobol3/Util.java
+jsnobol3/abstractbody.java
+jsnobol3/override.java
+jsnobol3/subclassdefined.java
+"/>
+
+<property name="SRC" value="${VMSRC} ${INTERPSRC}"/>
+
+<property name="S3JAR" value="jsnobol3.jar"/>
+<property name="CLASSDIR" value="classes"/>
+<property name="S3MAIN" value="jsnobol3.Snobol3"/>
+
+<!-- BUILD TASKS  -->
+
+<target name="all" depends="jarfile"/>
+
+<target name="jarfile" depends="classes">
+    <jar destfile="${S3JAR}" basedir="${CLASSDIR}">
+	<manifest>
+	    <attribute name="Manifest-Version" value="1.0"/>
+	    <attribute name="Main-class" value="${S3MAIN}"/>
+	</manifest>
+    </jar>
+</target>
+
+<target name="classes" depends="classdir">
+	<javac destdir="${CLASSDIR}" srcdir="src/main" includes="${SRC}"/>
+</target>
+
+<target name="classdir"><mkdir dir="${CLASSDIR}" /></target>
+
+<target name="clean">
+    <delete includeemptydirs="true" failonerror="false">
+        <fileset file="${S3JAR}"/>
+	<fileset dir="${CLASSDIR}"/>
+    </delete>
+</target>
+
+<target name="doexamples">
+</target>
+<target name="dotests">
+</target>
+
+<macrodef name="s3exec">
+    <attribute name="file"/>
+    <sequential>
+    <java fork="true" classpath="${S3JAR}" classname="${S3MAIN}">
+          <arg value="@{file}"/></java>	
+    </sequential>
+</macrodef>
+
+<property name="TESTS" value="
+tests/test1.s3
+tests/test2.s3
+tests/test3.s3
+tests/test4.s3
+tests/test5.s3
+tests/test6.s3
+tests/test7.s3
+tests/test8.s3
+tests/test9.s3
+tests/test10.s3
+"/>
+
+<!-- Wish ANT supported some kind of iteration -->
+<target name="tests">
+    <s3exec file="src/tests/test1.s3"/>
+    <s3exec file="src/tests/test2.s3"/>
+    <s3exec file="src/tests/test3.s3"/>
+    <s3exec file="src/tests/test4.s3"/>
+    <s3exec file="src/tests/test5.s3"/>
+    <s3exec file="src/tests/test6.s3"/>
+    <s3exec file="src/tests/test7.s3"/>
+    <s3exec file="src/tests/test8.s3"/>
+    <s3exec file="src/tests/test9.s3"/>
+    <s3exec file="src/tests/test10.s3"/>
+</target>
+
+<property name="EXAMPLES" value="
+examples/abs.s3
+examples/fact.s3 
+examples/gdb.s3
+examples/rfact.s3
+"/>
+
+<target name="examples">
+   <s3exec file="src/examples/abs.s3"/>
+   <s3exec file="src/examples/fact.s3"/>
+   <s3exec file="src/examples/gdb.s3"/>
+   <s3exec file="src/examples/rfact.s3"/>
+</target>
+
+</project>
