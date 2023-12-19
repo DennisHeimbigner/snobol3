@@ -2,6 +2,7 @@ package jsnobol3;
 
 import java.util.ArrayList;
 import static jsnobol3.Constants.NOADDRESS;
+import jsnobol3.ArgType;
 
 abstract class Function extends Binding
 {

@@ -1,108 +1,142 @@
-S3SRC=\
-src/AST.java \
-src/AstType.java \
-src/Call.java \
-src/Compiler.java \
-src/Constants.java \
-src/Debug.java \
-src/Define.java \
-src/Error.java \
-src/EvalStack.java \
-src/Frame.java \
-src/Function.java \
-src/FunctionCompiler.java \
-src/Label.java \
-src/Lexer.java \
-src/Modes.java \
-src/Operator.java \
-src/Parser.java \
-src/Pass1.java \
-src/Pass2.java \
-src/Pass3.java \
-src/PatternOp.java \
-src/Primitive.java \
-src/Program.java \
-src/Snobol3.java \
-src/S3Reader.java \
-src/Token.java \
-src/TokenType.java \
-src/Var.java \
-src/VM.java
+S3MF = s3.mf
+S3JAR = jsnobol3.jar
+CLASSDIR = classes
+S3MAIN = jsnobol3.Snobol3
+SRCDIR = src
+MAINDIR = src/main
+TESTDIR = ${SRCDIR}/tests
+EXAMPLEDIR = ${SRCDIR}/examples
 
-TOOLSRC=\
-src/tools/AbstractDebug.java \
-src/tools/AbstractDebugPoint.java \
-src/tools/CharStream.java \
-src/tools/CharStreamSequence.java \
-src/tools/Factory.java \
-src/tools/Main.java \
-src/tools/Parameters.java \
-src/tools/ParseArgs.java \
-src/tools/Pos.java \
-src/tools/QuotedString.java \
-src/tools/Ref.java \
-src/tools/StringBufferReader.java \
-src/tools/Util.java \
-src/tools/abstractbody.java \
-src/tools/override.java \
-src/tools/subclassdefined.java
+VMSRC =\
+${MAINDIR}/jsnobol3/ArgType.java \
+${MAINDIR}/jsnobol3/AST.java \
+${MAINDIR}/jsnobol3/AstType.java \
+${MAINDIR}/jsnobol3/Call.java \
+${MAINDIR}/jsnobol3/S3Compiler.java \
+${MAINDIR}/jsnobol3/Constants.java \
+${MAINDIR}/jsnobol3/Debug.java \
+${MAINDIR}/jsnobol3/Define.java \
+${MAINDIR}/jsnobol3/Error.java \
+${MAINDIR}/jsnobol3/EvalStack.java \
+${MAINDIR}/jsnobol3/Frame.java \
+${MAINDIR}/jsnobol3/Function.java \
+${MAINDIR}/jsnobol3/FunctionCompiler.java \
+${MAINDIR}/jsnobol3/Label.java \
+${MAINDIR}/jsnobol3/Lexer.java \
+${MAINDIR}/jsnobol3/Modes.java \
+${MAINDIR}/jsnobol3/Operator.java \
+${MAINDIR}/jsnobol3/Parser.java \
+${MAINDIR}/jsnobol3/Pass1.java \
+${MAINDIR}/jsnobol3/Pass2.java \
+${MAINDIR}/jsnobol3/Pass3.java \
+${MAINDIR}/jsnobol3/PatternOp.java \
+${MAINDIR}/jsnobol3/Primitive.java \
+${MAINDIR}/jsnobol3/Program.java \
+${MAINDIR}/jsnobol3/S3Reader.java \
+${MAINDIR}/jsnobol3/Scope.java \
+${MAINDIR}/jsnobol3/Token.java \
+${MAINDIR}/jsnobol3/TokenType.java \
+${MAINDIR}/jsnobol3/Var.java \
+${MAINDIR}/jsnobol3/VM.java
 
-SRC=${S3SRC} ${TOOLSRC}
+INTERPSRC =\
+${MAINDIR}/jsnobol3/AbstractDebug.java \
+${MAINDIR}/jsnobol3/AbstractDebugPoint.java \
+${MAINDIR}/jsnobol3/CharStream.java \
+${MAINDIR}/jsnobol3/CharStreamSequence.java \
+${MAINDIR}/jsnobol3/Factory.java \
+${MAINDIR}/jsnobol3/Main.java \
+${MAINDIR}/jsnobol3/Parameters.java \
+${MAINDIR}/jsnobol3/ParseArgs.java \
+${MAINDIR}/jsnobol3/Pos.java \
+${MAINDIR}/jsnobol3/QuotedString.java \
+${MAINDIR}/jsnobol3/Ref.java \
+${MAINDIR}/jsnobol3/Snobol3.java \
+${MAINDIR}/jsnobol3/StringBufferReader.java \
+${MAINDIR}/jsnobol3/Util.java \
+${MAINDIR}/jsnobol3/abstractbody.java \
+${MAINDIR}/jsnobol3/override.java \
+${MAINDIR}/jsnobol3/subclassdefined.java
 
-CLASSDIR=classes
+SRC = ${VMSRC} ${INTERPSRC}
 
-S3JAR=s3.jar
-S3MF=s3.mf
-S3MAIN=jsnobol3.Snobol3
+CLASSDIR = classes
 
-classes=${SRC:%.java=%.class}
+src = ${SRC:%.java = src/main/%.java}
+classes = ${SRC:%.java=%.class}
+
+.PHONY: check tests examples
 
 all: ${S3JAR}
 
-clean::
+clean:: cleantests cleanexamples
 	rm -fr ${CLASSDIR} ${S3JAR} ${S3MF}
 
-${S3JAR}: cl
+cleantests::
+	rm -fr ${SRCDIR}/tests/outputs
+
+cleanexamples::
+	rm -fr ${SRCDIR}/examples/outputs
+
+${S3JAR}: ${src} ${CLASSDIR}
 	rm -f ${S3MF}
 	echo 'Manifest-Version: 1.0' > ${S3MF}
 	echo 'Main-Class:' "${S3MAIN}" >> ${S3MF}
 	echo '' >> ${S3MF}
-	jar -mcf ${S3MF} ${S3JAR} -C ${CLASSDIR} jsnobol3 -C ${CLASSDIR} tools
-
-cl ${CLASSES}: ${SRC} ${CLASSDIR}
-	javac -d ${CLASSDIR} -classpath "${CLASSDIR}" ${SRC}
+	javac -d ${CLASSDIR} -classpath "${CLASSDIR}" ${src}
+	jar -mcf ${S3MF} ${S3JAR} -C ${CLASSDIR} jsnobol3
 
 ${CLASSDIR}:
 	mkdir ${CLASSDIR}
 
 ##################################################
 
-TESTS=\
-tests/test1 \
-tests/test2 \
-tests/test3 \
-tests/test4 \
-tests/test5 \
-tests/test6 \
-tests/test7 \
-tests/test8 \
-tests/test9 \
-tests/test10
+check: tests
 
-tests::
-	for t in  ${TESTS} ; do (\
-	    echo "<$$t>" ; \
-	    java -jar "${S3JAR}" $$t \
+TESTS=\
+test1 \
+test2 \
+test3 \
+test4 \
+test5 \
+test6 \
+test7 \
+test8 \
+test9 \
+test10
+
+TESTBASE = ${TESTDIR}/baseline
+TESTOUT = ${TESTDIR}/outputs
+tests: ${S3JAR} ${TESTS:%=${TESTDIR}/%.s3}
+	@rm -fr ${TESTOUT}
+	@mkdir -p ${TESTOUT}
+	@for t in  ${TESTS} ; do (\
+	    java -jar "${S3JAR}" ${TESTDIR}/$${t}.s3 > ${TESTOUT}/$${t}.txt ;\
+	    if diff -wBb ${TESTBASE}/$${t}.txt ${TESTOUT}/$${t}.txt >/dev/null;\
+	    then \
+		echo "*** PASS: $$t"; \
+	    else \
+		echo "*** FAIL: $$t"; \
+	    fi; \
 	) done
 
-EXAMPLES=\
-examples/example1 \
-examples/example2 \
-examples/example3 \
-examples/example4
+EXAMPLES =\
+abs  \
+fact \
+gdb  \
+rfact
 
-examples::
-	for t in  ${EXAMPLES} ; do (\
-	    echo $$t ; \
-	    java -jar "${S3JAR}" $$t \
+EXAMPLEBASE = ${EXAMPLEDIR}/baseline
+EXAMPLEOUT = ${EXAMPLEDIR}/outputs
+examples: ${S3JAR} ${EXAMPLES:%=${EXAMPLEDIR}/%.s3}
+	@rm -fr ${EXAMPLEOUT}
+	@mkdir -p ${EXAMPLEOUT}
+	@for t in  ${EXAMPLES} ; do (\
+	    java -jar "${S3JAR}" ${EXAMPLEDIR}/$${t}.s3 > ${EXAMPLEOUT}/$${t}.txt ;\
+	    if diff -wBb ${EXAMPLEBASE}/$${t}.txt ${EXAMPLEOUT}/$${t}.txt >/dev/null;\
+	    then \
+		echo "*** PASS: $$t"; \
+	    else \
+		echo "*** FAIL: $$t"; \
+	    fi; \
 	) done
