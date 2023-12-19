@@ -1,0 +1,6 @@
+CALL: add('19','')
+RET: add()=19
+ASSIGN: x=19
+CALL: size('abc')
+RET: size()=3
+ASSIGN: x=3

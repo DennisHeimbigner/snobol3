@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<project name="jsnobol3" default="all" basedir=".">
+<project name="jsnobol3" default="all" basedir="."
+         xmlns:if="ant:if"
+         xmlns:unless="ant:unless">
 
 <property name="RELEASE" value="1.0"/>
 <property name="RELEASEDATE" value="2005-10-01"/>
@@ -62,6 +64,10 @@ jsnobol3/subclassdefined.java
 <property name="S3JAR" value="jsnobol3.jar"/>
 <property name="CLASSDIR" value="classes"/>
 <property name="S3MAIN" value="jsnobol3.Snobol3"/>
+<property name="SRCDIR" value="src"/>
+<property name="TESTCASE" value="tests"/>
+<property name="EXAMPLECASE" value="examples"/>
+<property name="EXAMPLEOUTPUT" value="src/examples/${EXAMPLEDIR}"/>
 
 <!-- BUILD TASKS  -->
 
@@ -82,23 +88,56 @@ jsnobol3/subclassdefined.java
 
 <target name="classdir"><mkdir dir="${CLASSDIR}" /></target>
 
-<target name="clean">
+<target name="clean" depends="cleantests,cleanexamples">
     <delete includeemptydirs="true" failonerror="false">
         <fileset file="${S3JAR}"/>
 	<fileset dir="${CLASSDIR}"/>
     </delete>
 </target>
 
-<target name="doexamples">
+<target name="cleantests">
+    <delete includeemptydirs="true" failonerror="false">
+	<fileset dir="${SRCDIR}/tests/outputs"/>
+    </delete>
 </target>
-<target name="dotests">
+<target name="cleanexamples">
+    <delete includeemptydirs="true" failonerror="false">
+	<fileset dir="${SRCDIR}/examples/outputs"/>
+    </delete>
 </target>
 
 <macrodef name="s3exec">
-    <attribute name="file"/>
+    <attribute name="input"/>
+    <attribute name="output"/>
     <sequential>
-    <java fork="true" classpath="${S3JAR}" classname="${S3MAIN}">
-          <arg value="@{file}"/></java>	
+    <java fork="true" classpath="${S3JAR}" classname="${S3MAIN}" output="@{output}" append="true">
+          <arg value="@{input}"/></java>	
+    </sequential>
+</macrodef>
+
+<macrodef name="s3diff">
+    <attribute name="file"/>
+    <attribute name="case"/>
+    <sequential>
+    <s3exec input="${SRCDIR}/@{case}/@{file}.s3"
+            output="${SRCDIR}/@{case}/outputs/@{file}.txt"/>
+    <condition property="match" value="true">
+        <filesmatch file1="${SRCDIR}/@{case}/baseline/@{file}.txt"
+                    file2="${SRCDIR}/@{case}/outputs/@{file}.txt"
+                    textfile="true"/>
+    </condition>
+    <echo if:set="match">*** PASS: @{file}</echo>
+    <echo unless:set="match">*** FAIL: @{file}</echo>
+    </sequential>
+</macrodef>
+
+<!-- s3report tests output from each file -->
+<macrodef name="s3report">
+    <attribute name="file"/>
+    <attribute name="case"/>
+    <sequential>
+    <mkdir dir="${SRCDIR}/@{case}/outputs"/>
+    <s3diff file="@{file}" case="@{case}"/>
     </sequential>
 </macrodef>
 
@@ -116,17 +155,17 @@ tests/test10.s3
 "/>
 
 <!-- Wish ANT supported some kind of iteration -->
-<target name="tests">
-    <s3exec file="src/tests/test1.s3"/>
-    <s3exec file="src/tests/test2.s3"/>
-    <s3exec file="src/tests/test3.s3"/>
-    <s3exec file="src/tests/test4.s3"/>
-    <s3exec file="src/tests/test5.s3"/>
-    <s3exec file="src/tests/test6.s3"/>
-    <s3exec file="src/tests/test7.s3"/>
-    <s3exec file="src/tests/test8.s3"/>
-    <s3exec file="src/tests/test9.s3"/>
-    <s3exec file="src/tests/test10.s3"/>
+<target name="tests" depends="jarfile,cleantests">
+    <s3report file="test1" case="tests"/>
+    <s3report file="test2" case="tests"/>
+    <s3report file="test3" case="tests"/>
+    <s3report file="test4" case="tests"/>
+    <s3report file="test5" case="tests"/>
+    <s3report file="test6" case="tests"/>
+    <s3report file="test7" case="tests"/>
+    <s3report file="test8" case="tests"/>
+    <s3report file="test9" case="tests"/>
+    <s3report file="test10" case="tests"/>
 </target>
 
 <property name="EXAMPLES" value="
@@ -136,11 +175,11 @@ examples/gdb.s3
 examples/rfact.s3
 "/>
 
-<target name="examples">
-   <s3exec file="src/examples/abs.s3"/>
-   <s3exec file="src/examples/fact.s3"/>
-   <s3exec file="src/examples/gdb.s3"/>
-   <s3exec file="src/examples/rfact.s3"/>
+<target name="examples" depends="jarfile,cleanexamples">
+   <s3report file="abs" case="examples"/>
+   <s3report file="fact" case="examples"/>
+   <s3report file="gdb" case="examples"/>
+   <s3report file="rfact" case="examples"/>
 </target>
 
 </project>
